@@ -44,8 +44,8 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
 
       // Center the image
       img.set({
-        left: (fabricRef.current.width! - img.width! * scale) / 2,
-        top: (fabricRef.current.height! - img.height! * scale) / 2,
+        left: (fabricRef.current.getWidth() - img.width! * scale) / 2,
+        top: (fabricRef.current.getHeight() - img.height! * scale) / 2,
       });
 
       fabricRef.current.add(img);
