@@ -1,6 +1,6 @@
 
 import { useEffect, useRef } from "react";
-import { Canvas as FabricCanvas, Image as FabricImage, StaticCanvas } from "fabric";
+import { fabric } from "fabric";
 import type { TShirtDesign } from "@/pages/Customizer";
 
 interface TShirtCanvasProps {
@@ -9,12 +9,12 @@ interface TShirtCanvasProps {
 
 export function TShirtCanvas({ design }: TShirtCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fabricRef = useRef<StaticCanvas | null>(null);
+  const fabricRef = useRef<fabric.StaticCanvas | null>(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    fabricRef.current = new StaticCanvas(canvasRef.current, {
+    fabricRef.current = new fabric.StaticCanvas(canvasRef.current, {
       width: 400,
       height: 400,
       backgroundColor: design.color.toLowerCase(),
@@ -30,7 +30,7 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
 
     fabricRef.current.clear();
 
-    FabricImage.fromURL(design.designUrl, (img) => {
+    fabric.Image.fromURL(design.designUrl, (img) => {
       if (!fabricRef.current) return;
 
       // Scale image to fit within boundaries while maintaining aspect ratio
