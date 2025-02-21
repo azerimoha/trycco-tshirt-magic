@@ -1,7 +1,17 @@
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 import type { TShirtDesign } from "@/pages/Customizer";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface TShirtCanvasProps {
   design: TShirtDesign;
@@ -10,14 +20,28 @@ interface TShirtCanvasProps {
 export function TShirtCanvas({ design }: TShirtCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.StaticCanvas | null>(null);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [total, setTotal] = useState(2500); // Base price in DA
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    fabricRef.current = new fabric.StaticCanvas(canvasRef.current, {
+    // Initialize interactive canvas instead of static
+    fabricRef.current = new fabric.Canvas(canvasRef.current, {
       width: 400,
       height: 400,
-      backgroundColor: design.color.toLowerCase(),
+      backgroundColor: "#f8f9fa",
+    });
+
+    // Load t-shirt background
+    fabric.Image.fromURL("https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&fit=crop", (img) => {
+      img.scaleToWidth(400);
+      img.set({
+        selectable: false,
+        evented: false,
+      });
+      fabricRef.current?.add(img);
+      fabricRef.current?.renderAll();
     });
 
     return () => {
@@ -28,7 +52,11 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
   useEffect(() => {
     if (!design.designUrl || !fabricRef.current) return;
 
-    fabricRef.current.clear();
+    // Remove previous design if any
+    const objects = fabricRef.current.getObjects();
+    if (objects.length > 1) {
+      fabricRef.current.remove(objects[1]);
+    }
 
     fabric.Image.fromURL(design.designUrl, (img) => {
       if (!fabricRef.current) return;
@@ -42,20 +70,80 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
 
       img.scale(scale);
 
-      // Center the image
+      // Make the design interactive
       img.set({
         left: (fabricRef.current.getWidth() - img.width! * scale) / 2,
         top: (fabricRef.current.getHeight() - img.height! * scale) / 2,
+        cornerStyle: 'circle',
+        transparentCorners: false,
+        cornerColor: 'rgba(0,0,0,0.5)',
+        cornerStrokeColor: '#fff',
+        borderColor: '#000',
+        cornerSize: 12,
+        padding: 10,
+        rotatingPointOffset: 40,
       });
 
       fabricRef.current.add(img);
+      fabricRef.current.setActiveObject(img);
       fabricRef.current.renderAll();
     });
   }, [design.designUrl]);
 
+  const handleCheckout = () => {
+    if (!design.designUrl) {
+      toast.error("Please upload a design first");
+      return;
+    }
+    setShowCheckout(true);
+  };
+
+  const handleConfirmOrder = () => {
+    toast.success("Order placed successfully!");
+    setShowCheckout(false);
+  };
+
   return (
-    <div className="flex h-full items-center justify-center p-4">
-      <canvas ref={canvasRef} className="max-w-full" />
-    </div>
+    <>
+      <div className="flex h-full flex-col items-center justify-center gap-4">
+        <div className="relative rounded-lg border bg-white p-4 shadow-sm">
+          <canvas ref={canvasRef} className="max-w-full" />
+        </div>
+        <Button onClick={handleCheckout} className="w-full max-w-xs">
+          Proceed to Checkout
+        </Button>
+      </div>
+
+      <Dialog open={showCheckout} onOpenChange={setShowCheckout}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Complete Your Order</DialogTitle>
+            <DialogDescription>
+              Review your custom t-shirt order details below.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="flex justify-between border-b pb-2">
+              <span>Custom T-Shirt ({design.size})</span>
+              <span>{total.toLocaleString()} DA</span>
+            </div>
+            <div className="flex justify-between font-medium">
+              <span>Total</span>
+              <span>{total.toLocaleString()} DA</span>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCheckout(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmOrder}>
+              Confirm Order
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

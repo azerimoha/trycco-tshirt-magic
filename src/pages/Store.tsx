@@ -1,10 +1,8 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 
-// Mock data - replace with actual API call later
 const weeklyDesigns = [
   {
     id: 1,
@@ -12,7 +10,7 @@ const weeklyDesigns = [
     designer: "Sarah Smith",
     description: "A minimalist mountain landscape at sunset",
     price: 2500,
-    imageUrl: "/placeholder.svg",
+    imageUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=400&fit=crop",
   },
   {
     id: 2,
@@ -20,7 +18,7 @@ const weeklyDesigns = [
     designer: "John Doe",
     description: "Abstract representation of city life",
     price: 2500,
-    imageUrl: "/placeholder.svg",
+    imageUrl: "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=400&h=400&fit=crop",
   },
 ];
 

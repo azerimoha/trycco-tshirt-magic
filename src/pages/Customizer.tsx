@@ -39,15 +39,6 @@ const Customizer = () => {
     toast.success("Design uploaded successfully!");
   };
 
-  const handleCheckout = () => {
-    if (!design.designUrl) {
-      toast.error("Please upload a design first");
-      return;
-    }
-    // TODO: Implement checkout flow
-    toast.info("Checkout functionality coming soon!");
-  };
-
   return (
     <div className="container mx-auto py-8">
       <div className="animate-fade-in">
@@ -109,10 +100,6 @@ const Customizer = () => {
                 Max file size: 5MB. PNG or JPG only.
               </p>
             </div>
-
-            <Button onClick={handleCheckout} className="w-full">
-              Proceed to Checkout
-            </Button>
           </div>
 
           <div className="min-h-[400px] rounded-lg border">
