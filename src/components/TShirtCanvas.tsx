@@ -1,6 +1,6 @@
 
 import { useEffect, useRef } from "react";
-import { Canvas, Image as FabricImage, StaticCanvas } from "fabric";
+import { Canvas as FabricCanvas, Image as FabricImage, StaticCanvas } from "fabric";
 import type { TShirtDesign } from "@/pages/Customizer";
 
 interface TShirtCanvasProps {
