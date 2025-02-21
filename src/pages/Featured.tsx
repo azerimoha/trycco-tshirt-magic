@@ -5,28 +5,27 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 
-// Mocked featured designs - replace with API call later
 const featuredDesigns = [
   {
     id: 1,
     name: "Classic Logo",
     description: "Our signature design that never goes out of style",
     price: 2500,
-    imageUrl: "/placeholder.svg",
+    imageUrl: "/lovable-uploads/9d489ea9-f724-431e-9623-a7b50c31ca39.png",
   },
   {
     id: 2,
     name: "Geometric Abstract",
     description: "Modern geometric patterns in bold colors",
     price: 2500,
-    imageUrl: "/placeholder.svg",
+    imageUrl: "/lovable-uploads/9d489ea9-f724-431e-9623-a7b50c31ca39.png",
   },
   {
     id: 3,
     name: "Vintage Vibes",
     description: "Retro-inspired artwork with a modern twist",
     price: 2500,
-    imageUrl: "/placeholder.svg",
+    imageUrl: "/lovable-uploads/9d489ea9-f724-431e-9623-a7b50c31ca39.png",
   },
 ];
 
@@ -61,7 +60,7 @@ const Featured = () => {
                 <img
                   src={design.imageUrl}
                   alt={design.name}
-                  className="aspect-square w-full rounded-lg object-cover"
+                  className="aspect-square w-full rounded-lg object-contain bg-gray-50 p-4"
                 />
               </CardContent>
               <CardFooter className="flex items-center justify-between">

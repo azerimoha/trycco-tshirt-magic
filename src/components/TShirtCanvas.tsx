@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 import type { TShirtDesign } from "@/pages/Customizer";
@@ -19,7 +18,6 @@ interface TShirtCanvasProps {
 
 export function TShirtCanvas({ design }: TShirtCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // Change the type from StaticCanvas to Canvas
   const fabricRef = useRef<fabric.Canvas | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
   const [total, setTotal] = useState(2500);
@@ -35,7 +33,7 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     });
 
     // Load t-shirt background
-    fabric.Image.fromURL("https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&fit=crop", (img) => {
+    fabric.Image.fromURL("/lovable-uploads/9d489ea9-f724-431e-9623-a7b50c31ca39.png", (img) => {
       img.scaleToWidth(400);
       img.set({
         selectable: false,
