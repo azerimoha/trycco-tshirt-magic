@@ -19,14 +19,15 @@ interface TShirtCanvasProps {
 
 export function TShirtCanvas({ design }: TShirtCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fabricRef = useRef<fabric.StaticCanvas | null>(null);
+  // Change the type from StaticCanvas to Canvas
+  const fabricRef = useRef<fabric.Canvas | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
-  const [total, setTotal] = useState(2500); // Base price in DA
+  const [total, setTotal] = useState(2500);
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    // Initialize interactive canvas instead of static
+    // Initialize interactive canvas
     fabricRef.current = new fabric.Canvas(canvasRef.current, {
       width: 400,
       height: 400,
