@@ -8,7 +8,12 @@ const Index = () => {
 
   return (
     <div className="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center text-center">
-      <div className="animate-fade-in space-y-6">
+      <div className="animate-fade-in space-y-8">
+        <img
+          src="/lovable-uploads/b542941f-e1de-4789-ae6d-0648738ca37d.png"
+          alt="TRYCO"
+          className="mx-auto mb-8 h-24 sm:h-32"
+        />
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl">
             Design Your Perfect T-Shirt
