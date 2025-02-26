@@ -60,27 +60,28 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    // Initialize interactive canvas
-    fabricRef.current = new fabric.Canvas(canvasRef.current, {
-      width: 400,
-      height: 400,
+    const canvas = new fabric.Canvas(canvasRef.current, {
+      width: 300,
+      height: 300,
       backgroundColor: "#f8f9fa",
     });
+
+    fabricRef.current = canvas;
 
     // Load t-shirt background based on selected color
     const shirtImage = SHIRT_IMAGES[design.color];
     fabric.Image.fromURL(shirtImage, (img) => {
-      img.scaleToWidth(400);
+      img.scaleToWidth(300);
       img.set({
         selectable: false,
         evented: false,
       });
-      fabricRef.current?.add(img);
-      fabricRef.current?.renderAll();
+      canvas.add(img);
+      canvas.renderAll();
     });
 
     return () => {
-      fabricRef.current?.dispose();
+      canvas.dispose();
     };
   }, [design.color]);
 
@@ -148,11 +149,13 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
 
   return (
     <>
-      <div className="flex h-full flex-col items-center justify-center gap-4">
-        <div className="relative rounded-lg border bg-white p-4 shadow-sm w-full max-w-md mx-auto">
-          <canvas ref={canvasRef} className="w-full" />
+      <div className="flex flex-col items-center justify-center gap-4">
+        <div className="relative w-full max-w-[300px] mx-auto">
+          <div className="rounded-lg border bg-white p-3 shadow-sm">
+            <canvas ref={canvasRef} className="w-full" />
+          </div>
         </div>
-        <Button onClick={handleCheckout} className="w-full max-w-xs">
+        <Button onClick={handleCheckout} className="w-full max-w-[300px]">
           Proceed to Checkout
         </Button>
       </div>

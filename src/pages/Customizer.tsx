@@ -40,12 +40,12 @@ const Customizer = () => {
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto px-4 py-6 md:py-8">
       <div className="animate-fade-in">
-        <h1 className="mb-8 text-3xl font-bold tracking-tight">Customize Your T-Shirt</h1>
+        <h1 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">Customize Your T-Shirt</h1>
         
-        <div className="grid gap-8 lg:grid-cols-2">
-          <div className="space-y-6">
+        <div className="grid gap-6 md:grid-cols-2 md:gap-8">
+          <div className="space-y-4 order-2 md:order-1">
             <div className="space-y-2">
               <Label>Size</Label>
               <Select
@@ -102,7 +102,7 @@ const Customizer = () => {
             </div>
           </div>
 
-          <div className="min-h-[400px] rounded-lg border">
+          <div className="order-1 md:order-2">
             <TShirtCanvas design={design} />
           </div>
         </div>
