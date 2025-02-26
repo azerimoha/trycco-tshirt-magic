@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { TShirtCanvas } from "@/components/TShirtCanvas";
 import { toast } from "sonner";
+import { Palette, Ruler, Upload } from "lucide-react";
 
 const sizes = ["S", "M", "L", "XL", "XXL"] as const;
 const colors = ["Black", "White"] as const;
@@ -40,43 +41,44 @@ const Customizer = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 md:py-8">
-      <div className="animate-fade-in">
+    <div className="container mx-auto px-4 py-6 md:py-8 min-h-[calc(100vh-6rem)]">
+      <div className="animate-fade-in max-w-md mx-auto">
         <h1 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">Customize Your T-Shirt</h1>
         
-        <div className="grid gap-6 md:grid-cols-2 md:gap-8">
-          <div className="space-y-4 order-2 md:order-1">
-            <div className="space-y-2">
-              <Label>Size</Label>
+        <div className="flex flex-col gap-6">
+          <div className="flex justify-center gap-3">
+            <div className="relative">
               <Select
                 value={design.size}
                 onValueChange={(size: Size) =>
                   setDesign((prev) => ({ ...prev, size }))
                 }
               >
-                <SelectTrigger>
-                  <SelectValue />
+                <SelectTrigger className="w-12 h-12 rounded-full p-0 border-2">
+                  <Ruler className="w-5 h-5 mx-auto" />
                 </SelectTrigger>
                 <SelectContent>
                   {sizes.map((size) => (
                     <SelectItem key={size} value={size}>
-                      {size}
+                      Size {size}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium">
+                {design.size}
+              </span>
             </div>
 
-            <div className="space-y-2">
-              <Label>Color</Label>
+            <div className="relative">
               <Select
                 value={design.color}
                 onValueChange={(color: Color) =>
                   setDesign((prev) => ({ ...prev, color }))
                 }
               >
-                <SelectTrigger>
-                  <SelectValue />
+                <SelectTrigger className="w-12 h-12 rounded-full p-0 border-2">
+                  <Palette className="w-5 h-5 mx-auto" />
                 </SelectTrigger>
                 <SelectContent>
                   {colors.map((color) => (
@@ -86,23 +88,28 @@ const Customizer = () => {
                   ))}
                 </SelectContent>
               </Select>
+              <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium">
+                {design.color}
+              </span>
             </div>
 
-            <div className="space-y-2">
-              <Label>Upload Design</Label>
-              <input
-                type="file"
-                accept="image/png,image/jpeg"
-                onChange={handleFileUpload}
-                className="w-full rounded-md border border-input bg-background px-3 py-2"
-              />
-              <p className="text-sm text-muted-foreground">
-                Max file size: 5MB. PNG or JPG only.
-              </p>
+            <div className="relative">
+              <label className="w-12 h-12 rounded-full border-2 border-input hover:border-primary transition-colors flex items-center justify-center cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Upload className="w-5 h-5" />
+              </label>
+              <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium">
+                Upload
+              </span>
             </div>
           </div>
 
-          <div className="order-1 md:order-2">
+          <div className="mt-8">
             <TShirtCanvas design={design} />
           </div>
         </div>
