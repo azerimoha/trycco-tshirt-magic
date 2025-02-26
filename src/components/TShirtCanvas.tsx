@@ -25,6 +25,11 @@ interface TShirtCanvasProps {
   design: TShirtDesign;
 }
 
+const SHIRT_IMAGES = {
+  Black: "/lovable-uploads/1f35303a-6f59-4852-bc09-d34abd1d990e.png",
+  White: "/lovable-uploads/f3dcf279-ebb6-4d4f-8ed2-19e65f89c964.png",
+};
+
 const WILAYAS = [
   "Alger",
   "Oran",
@@ -62,8 +67,9 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
       backgroundColor: "#f8f9fa",
     });
 
-    // Load t-shirt background
-    fabric.Image.fromURL("/lovable-uploads/9d489ea9-f724-431e-9623-a7b50c31ca39.png", (img) => {
+    // Load t-shirt background based on selected color
+    const shirtImage = SHIRT_IMAGES[design.color];
+    fabric.Image.fromURL(shirtImage, (img) => {
       img.scaleToWidth(400);
       img.set({
         selectable: false,
@@ -99,7 +105,7 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
 
       img.scale(scale);
 
-      // Make the design interactive
+      // Center the design on the t-shirt
       img.set({
         left: (fabricRef.current.getWidth() - img.width! * scale) / 2,
         top: (fabricRef.current.getHeight() - img.height! * scale) / 2,
