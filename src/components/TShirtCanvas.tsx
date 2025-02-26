@@ -10,17 +10,47 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 interface TShirtCanvasProps {
   design: TShirtDesign;
 }
 
+const WILAYAS = [
+  "Alger",
+  "Oran",
+  "Constantine",
+  "Annaba",
+  // Add more wilayas as needed
+];
+
+const DELIVERY_FEES = {
+  bureau: 400,
+  home: 600,
+};
+
 export function TShirtCanvas({ design }: TShirtCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
-  const [total, setTotal] = useState(2500);
+  const [basePrice] = useState(2500);
+  const [deliveryType, setDeliveryType] = useState<"bureau" | "home">("bureau");
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phoneNumber: "",
+    wilaya: "",
+  });
+
+  const total = basePrice + DELIVERY_FEES[deliveryType];
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -89,6 +119,10 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     });
   }, [design.designUrl]);
 
+  const handleFormChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleCheckout = () => {
     if (!design.designUrl) {
       toast.error("Please upload a design first");
@@ -98,6 +132,10 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
   };
 
   const handleConfirmOrder = () => {
+    if (!formData.fullName || !formData.phoneNumber || !formData.wilaya) {
+      toast.error("Please fill in all fields");
+      return;
+    }
     toast.success("Order placed successfully!");
     setShowCheckout(false);
   };
@@ -105,8 +143,8 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
   return (
     <>
       <div className="flex h-full flex-col items-center justify-center gap-4">
-        <div className="relative rounded-lg border bg-white p-4 shadow-sm">
-          <canvas ref={canvasRef} className="max-w-full" />
+        <div className="relative rounded-lg border bg-white p-4 shadow-sm w-full max-w-md mx-auto">
+          <canvas ref={canvasRef} className="w-full" />
         </div>
         <Button onClick={handleCheckout} className="w-full max-w-xs">
           Proceed to Checkout
@@ -114,22 +152,94 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
       </div>
 
       <Dialog open={showCheckout} onOpenChange={setShowCheckout}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Complete Your Order</DialogTitle>
             <DialogDescription>
-              Review your custom t-shirt order details below.
+              Please provide your delivery details below.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
-            <div className="flex justify-between border-b pb-2">
-              <span>Custom T-Shirt ({design.size})</span>
-              <span>{total.toLocaleString()} DA</span>
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                value={formData.fullName}
+                onChange={(e) => handleFormChange("fullName", e.target.value)}
+                placeholder="Enter your full name"
+              />
             </div>
-            <div className="flex justify-between font-medium">
-              <span>Total</span>
-              <span>{total.toLocaleString()} DA</span>
+
+            <div className="space-y-2">
+              <Label htmlFor="phoneNumber">Phone Number</Label>
+              <Input
+                id="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={(e) => handleFormChange("phoneNumber", e.target.value)}
+                placeholder="Enter your phone number"
+                type="tel"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="wilaya">Wilaya</Label>
+              <Select
+                value={formData.wilaya}
+                onValueChange={(value) => handleFormChange("wilaya", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your wilaya" />
+                </SelectTrigger>
+                <SelectContent>
+                  {WILAYAS.map((wilaya) => (
+                    <SelectItem key={wilaya} value={wilaya}>
+                      {wilaya}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Delivery Type</Label>
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="deliveryType"
+                    checked={deliveryType === "bureau"}
+                    onChange={() => setDeliveryType("bureau")}
+                    className="rounded-full"
+                  />
+                  Bureau Delivery ({DELIVERY_FEES.bureau.toLocaleString()} DA)
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="deliveryType"
+                    checked={deliveryType === "home"}
+                    onChange={() => setDeliveryType("home")}
+                    className="rounded-full"
+                  />
+                  Home Delivery ({DELIVERY_FEES.home.toLocaleString()} DA)
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-4 border-t">
+              <div className="flex justify-between">
+                <span>T-Shirt ({design.size})</span>
+                <span>{basePrice.toLocaleString()} DA</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Delivery Fee</span>
+                <span>{DELIVERY_FEES[deliveryType].toLocaleString()} DA</span>
+              </div>
+              <div className="flex justify-between font-medium pt-2 border-t">
+                <span>Total</span>
+                <span>{total.toLocaleString()} DA</span>
+              </div>
             </div>
           </div>
 

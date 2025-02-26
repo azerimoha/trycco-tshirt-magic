@@ -15,8 +15,8 @@ export function BottomNav() {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background">
-      <div className="mx-auto max-w-md">
+    <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
+      <nav className="glass-nav mx-auto max-w-md rounded-xl">
         <div className="flex items-center justify-around p-2">
           {navItems.map(({ path, icon: Icon, label }) => {
             const isActive = location.pathname === path;
@@ -37,7 +37,7 @@ export function BottomNav() {
             );
           })}
         </div>
-      </div>
-    </nav>
+      </nav>
+    </div>
   );
 }
