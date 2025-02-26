@@ -8,7 +8,7 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-white to-gray-50">
+    <div className="flex min-h-screen w-full flex-col bg-gradient-to-b from-white to-gray-50">
       <header className="border-b">
         <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
           <Link to="/" className="inline-block">
@@ -20,7 +20,7 @@ export function Layout({ children }: LayoutProps) {
           </Link>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 pb-20 pt-4 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-24 pt-4 sm:px-6 lg:px-8">
         {children}
       </main>
       <BottomNav />
