@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 import type { TShirtDesign } from "@/pages/Customizer";
@@ -21,6 +20,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import {
+  Maximize,
+  Minimize,
+  Crop,
+  RotateCw,
+  Trash2,
+  Square,
+  Circle as CircleIcon,
+  Plus,
+  Move,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 
 interface TShirtCanvasProps {
   design: TShirtDesign;
@@ -44,6 +58,9 @@ const DELIVERY_FEES = {
   home: 600,
 };
 
+type EditMode = "normal" | "crop";
+type ShapeType = "rectangle" | "circle";
+
 export function TShirtCanvas({ design }: TShirtCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
@@ -55,10 +72,14 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     phoneNumber: "",
     wilaya: "",
   });
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [editMode, setEditMode] = useState<EditMode>("normal");
+  const [selectedShape, setSelectedShape] = useState<ShapeType>("rectangle");
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const total = basePrice + DELIVERY_FEES[deliveryType];
 
-  useEffect(() => {
+  const initializeCanvas = () => {
     if (!canvasRef.current) return;
 
     // Set fixed dimensions for the canvas
@@ -69,6 +90,7 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
       width: canvasWidth,
       height: canvasHeight,
       backgroundColor: "#f8f9fa",
+      preserveObjectStacking: true,
     });
 
     fabricRef.current = canvas;
@@ -102,21 +124,90 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
       canvas.renderAll();
     });
 
-    return () => {
-      canvas.dispose();
-    };
-  }, [design.color]);
+    // Set up object selection events
+    canvas.on('selection:created', updateControlVisibility);
+    canvas.on('selection:updated', updateControlVisibility);
+    canvas.on('selection:cleared', updateControlVisibility);
+
+    return canvas;
+  };
+
+  const updateControlVisibility = () => {
+    if (!fabricRef.current) return;
+    
+    const activeObject = fabricRef.current.getActiveObject();
+    // We could update UI state based on active object here if needed
+  };
 
   useEffect(() => {
-    if (!design.designUrl || !fabricRef.current) return;
+    const canvas = initializeCanvas();
+    
+    return () => {
+      if (canvas) {
+        canvas.dispose();
+      }
+    };
+  }, []);
 
-    // Remove previous design if any
+  useEffect(() => {
+    if (!fabricRef.current) return;
+    
+    // Clear all designs when color changes
     const objects = fabricRef.current.getObjects();
-    if (objects.length > 1) {
-      fabricRef.current.remove(objects[1]);
+    if (objects.length > 0) {
+      // Keep only the first object (the t-shirt)
+      const shirtObject = objects[0];
+      fabricRef.current.clear();
+      fabricRef.current.add(shirtObject);
     }
 
-    fabric.Image.fromURL(design.designUrl, (img) => {
+    // Reload t-shirt background based on selected color
+    const shirtImage = SHIRT_IMAGES[design.color];
+    fabric.Image.fromURL(shirtImage, (img) => {
+      if (!fabricRef.current) return;
+      
+      const canvasWidth = fabricRef.current.getWidth();
+      const canvasHeight = fabricRef.current.getHeight();
+      
+      // Calculate proper positioning to center the shirt
+      const imgWidth = img.width || 0;
+      const imgHeight = img.height || 0;
+      
+      // Maintain aspect ratio while fitting within canvas
+      const scale = Math.min(canvasWidth / imgWidth, canvasHeight / imgHeight) * 0.85;
+      
+      // Center the image
+      const left = (canvasWidth - imgWidth * scale) / 2;
+      const top = (canvasHeight - imgHeight * scale) / 2;
+      
+      // Remove previous shirt
+      const objects = fabricRef.current.getObjects();
+      if (objects.length > 0) {
+        fabricRef.current.remove(objects[0]);
+      }
+      
+      img.set({
+        scaleX: scale,
+        scaleY: scale,
+        left: left,
+        top: top,
+        selectable: false,
+        evented: false,
+        originX: 'left',
+        originY: 'top'
+      });
+      
+      fabricRef.current.add(img);
+      fabricRef.current.sendToBack(img);
+      fabricRef.current.renderAll();
+    });
+  }, [design.color]);
+
+  // Add image to canvas
+  const addImageToCanvas = (url: string) => {
+    if (!fabricRef.current) return;
+
+    fabric.Image.fromURL(url, (img) => {
       if (!fabricRef.current) return;
 
       // Scale image to fit within boundaries while maintaining aspect ratio
@@ -144,24 +235,155 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
         rotatingPointOffset: 40,
       });
 
+      // Apply shape mask if needed
+      if (selectedShape === "circle") {
+        applyCircleMask(img);
+      }
+
       fabricRef.current.add(img);
       fabricRef.current.setActiveObject(img);
       fabricRef.current.renderAll();
     });
-  }, [design.designUrl]);
+  };
 
+  // Apply circular mask to an image
+  const applyCircleMask = (img: fabric.Image) => {
+    const width = img.width!;
+    const height = img.height!;
+    const radius = Math.min(width, height) / 2;
+    
+    img.clipPath = new fabric.Circle({
+      radius: radius,
+      originX: 'center',
+      originY: 'center',
+      left: width / 2,
+      top: height / 2,
+    });
+  };
+
+  // Apply rectangular mask to an image
+  const applyRectangleMask = (img: fabric.Image) => {
+    img.clipPath = null;
+    fabricRef.current?.renderAll();
+  };
+
+  // Update shape of selected object
+  const changeSelectedObjectShape = () => {
+    if (!fabricRef.current) return;
+    
+    const activeObject = fabricRef.current.getActiveObject();
+    if (!activeObject || !(activeObject instanceof fabric.Image)) return;
+    
+    if (selectedShape === "circle") {
+      applyCircleMask(activeObject);
+    } else {
+      applyRectangleMask(activeObject);
+    }
+    
+    fabricRef.current.renderAll();
+  };
+
+  // Effect to apply shape change when selected shape changes
+  useEffect(() => {
+    changeSelectedObjectShape();
+  }, [selectedShape]);
+
+  // Handle file upload for design
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+    addImageToCanvas(url);
+    toast.success("Design uploaded successfully!");
+  };
+
+  // Toggle fullscreen mode
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+    
+    // Give the browser a moment to update the DOM
+    setTimeout(() => {
+      if (fabricRef.current) {
+        fabricRef.current.setDimensions({
+          width: canvasRef.current?.width || 300,
+          height: canvasRef.current?.height || 300
+        });
+        fabricRef.current.renderAll();
+      }
+    }, 100);
+  };
+
+  // Delete selected object
+  const deleteSelectedObject = () => {
+    if (!fabricRef.current) return;
+    
+    const activeObject = fabricRef.current.getActiveObject();
+    if (!activeObject) return;
+    
+    fabricRef.current.remove(activeObject);
+    fabricRef.current.renderAll();
+    toast.success("Element deleted");
+  };
+
+  // Rotate selected object
+  const rotateSelectedObject = () => {
+    if (!fabricRef.current) return;
+    
+    const activeObject = fabricRef.current.getActiveObject();
+    if (!activeObject) return;
+    
+    activeObject.rotate((activeObject.angle || 0) + 45);
+    fabricRef.current.renderAll();
+  };
+
+  // Move object slightly in a direction
+  const moveObject = (direction: 'left' | 'right' | 'up' | 'down') => {
+    if (!fabricRef.current) return;
+    
+    const activeObject = fabricRef.current.getActiveObject();
+    if (!activeObject) return;
+    
+    const moveAmount = 10;
+    
+    switch (direction) {
+      case 'left':
+        activeObject.left = (activeObject.left || 0) - moveAmount;
+        break;
+      case 'right':
+        activeObject.left = (activeObject.left || 0) + moveAmount;
+        break;
+      case 'up':
+        activeObject.top = (activeObject.top || 0) - moveAmount;
+        break;
+      case 'down':
+        activeObject.top = (activeObject.top || 0) + moveAmount;
+        break;
+    }
+    
+    fabricRef.current.renderAll();
+  };
+
+  // Handle form changes
   const handleFormChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Start checkout process
   const handleCheckout = () => {
-    if (!design.designUrl) {
-      toast.error("Please upload a design first");
+    if (fabricRef.current && fabricRef.current.getObjects().length <= 1) {
+      toast.error("Please upload at least one design");
       return;
     }
     setShowCheckout(true);
   };
 
+  // Confirm order
   const handleConfirmOrder = () => {
     if (!formData.fullName || !formData.phoneNumber || !formData.wilaya) {
       toast.error("Please fill in all fields");
@@ -173,15 +395,122 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
 
   return (
     <>
-      <div className="flex flex-col items-center justify-center gap-4">
-        <div className="relative w-full max-w-[300px] mx-auto">
+      <div 
+        ref={containerRef}
+        className={`flex flex-col items-center justify-center gap-4 transition-all duration-300 ${
+          isFullscreen ? "fixed inset-0 z-50 bg-background/95 p-4" : ""
+        }`}
+      >
+        <div className="w-full max-w-md mx-auto">
+          <div className="flex flex-wrap justify-center gap-2 mb-4">
+            <Button 
+              variant="outline" 
+              size="icon"
+              className="rounded-full"
+              onClick={toggleFullscreen}
+            >
+              {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="icon"
+              className="rounded-full"
+              onClick={() => setSelectedShape(selectedShape === "rectangle" ? "circle" : "rectangle")}
+            >
+              {selectedShape === "rectangle" ? 
+                <Square className="h-4 w-4" /> : 
+                <CircleIcon className="h-4 w-4" />
+              }
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="icon"
+              className="rounded-full"
+              onClick={rotateSelectedObject}
+            >
+              <RotateCw className="h-4 w-4" />
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="icon"
+              className="rounded-full"
+              onClick={deleteSelectedObject}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+            
+            <div className="flex gap-1">
+              <Button 
+                variant="outline" 
+                size="icon"
+                className="rounded-full"
+                onClick={() => moveObject('left')}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon"
+                className="rounded-full"
+                onClick={() => moveObject('right')}
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon"
+                className="rounded-full"
+                onClick={() => moveObject('up')}
+              >
+                <ArrowUp className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon"
+                className="rounded-full"
+                onClick={() => moveObject('down')}
+              >
+                <ArrowDown className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <label className="rounded-full w-9 h-9 flex items-center justify-center border-2 border-input hover:border-primary transition-colors cursor-pointer">
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <Plus className="h-4 w-4" />
+            </label>
+          </div>
+        </div>
+        
+        <div className={`relative mx-auto ${isFullscreen ? "max-w-xl" : "max-w-[300px] w-full"}`}>
           <div className="rounded-lg border bg-white dark:bg-gray-800 p-3 shadow-sm flex items-center justify-center">
             <canvas ref={canvasRef} className="block" />
           </div>
         </div>
-        <Button onClick={handleCheckout} className="w-full max-w-[300px]">
-          Proceed to Checkout
-        </Button>
+        
+        {!isFullscreen && (
+          <Button onClick={handleCheckout} className="w-full max-w-[300px]">
+            Proceed to Checkout
+          </Button>
+        )}
+        
+        {isFullscreen && (
+          <div className="mt-4 flex gap-2">
+            <Button variant="outline" onClick={toggleFullscreen}>
+              Close Fullscreen
+            </Button>
+            <Button onClick={handleCheckout}>
+              Proceed to Checkout
+            </Button>
+          </div>
+        )}
       </div>
 
       <Dialog open={showCheckout} onOpenChange={setShowCheckout}>
