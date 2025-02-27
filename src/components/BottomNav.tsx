@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { Home, Palette, ShoppingCart, Star, User } from "lucide-react";
+import { Home, Palette, ShoppingCart, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -8,7 +8,6 @@ const navItems = [
   { path: "/customizer", icon: Palette, label: "Customize" },
   { path: "/store", icon: ShoppingCart, label: "Store" },
   { path: "/featured", icon: Star, label: "Featured" },
-  { path: "/profile", icon: User, label: "Profile" },
 ];
 
 export function BottomNav() {
@@ -17,7 +16,7 @@ export function BottomNav() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
       <nav className="glass-nav mx-auto max-w-md rounded-xl">
-        <div className="flex items-center justify-evenly px-2 py-3">
+        <div className="flex items-center justify-center px-2 py-3">
           {navItems.map(({ path, icon: Icon, label }) => {
             const isActive = location.pathname === path;
             return (
@@ -25,13 +24,15 @@ export function BottomNav() {
                 key={path}
                 to={path}
                 className={cn(
-                  "flex flex-col items-center justify-center w-16 transition-colors",
+                  "nav-item flex flex-col items-center justify-center px-4 transition-all",
                   isActive
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-primary"
+                    ? "text-primary active"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <span className={cn("nav-indicator", isActive && "active")}>
+                  <Icon className="h-5 w-5" />
+                </span>
                 <span className="mt-1 text-[0.65rem] font-medium">{label}</span>
               </Link>
             );
