@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 import type { TShirtDesign } from "@/pages/Customizer";
@@ -24,17 +23,12 @@ import { toast } from "sonner";
 import {
   Maximize,
   Minimize,
-  Crop,
-  RotateCw,
-  Trash2,
   Square,
   Circle as CircleIcon,
   Plus,
-  Move,
-  ArrowLeft,
-  ArrowRight,
-  ArrowUp,
-  ArrowDown,
+  Trash2,
+  MoveUp,
+  MoveDown
 } from "lucide-react";
 
 interface TShirtCanvasProps {
@@ -48,10 +42,8 @@ const SHIRT_IMAGES = {
 
 const WILAYAS = [
   "Alger",
-  "Oran",
-  "Constantine",
-  "Annaba",
-  // Add more wilayas as needed
+  "Bejaia",
+  // Other wilayas coming soon
 ];
 
 const DELIVERY_FEES = {
@@ -59,14 +51,13 @@ const DELIVERY_FEES = {
   home: 600,
 };
 
-type EditMode = "normal" | "crop";
 type ShapeType = "rectangle" | "circle";
 
 export function TShirtCanvas({ design }: TShirtCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
-  const [basePrice] = useState(2500);
+  const [basePrice] = useState(1900);
   const [deliveryType, setDeliveryType] = useState<"bureau" | "home">("bureau");
   const [formData, setFormData] = useState({
     fullName: "",
@@ -74,7 +65,6 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     wilaya: "",
   });
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [editMode, setEditMode] = useState<EditMode>("normal");
   const [selectedShape, setSelectedShape] = useState<ShapeType>("rectangle");
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -83,7 +73,7 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
   const initializeCanvas = () => {
     if (!canvasRef.current) return;
 
-    // Set fixed dimensions for the canvas
+    // Set responsive dimensions for the canvas based on container size
     const canvasWidth = 300;
     const canvasHeight = 300;
 
@@ -125,27 +115,45 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
       canvas.renderAll();
     });
 
-    // Set up object selection events
+    // Set up object selection events for UI feedback
     canvas.on('selection:created', updateControlVisibility);
     canvas.on('selection:updated', updateControlVisibility);
     canvas.on('selection:cleared', updateControlVisibility);
-
-    return canvas;
+    
+    // Handle window resize
+    const handleResize = () => {
+      if (isFullscreen && fabricRef.current) {
+        const containerWidth = containerRef.current?.clientWidth || window.innerWidth;
+        const containerHeight = containerRef.current?.clientHeight || window.innerHeight;
+        const maxDimension = Math.min(containerWidth, containerHeight) * 0.8;
+        
+        fabricRef.current.setDimensions({
+          width: maxDimension,
+          height: maxDimension
+        });
+        fabricRef.current.renderAll();
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      canvas.dispose();
+    };
   };
 
   const updateControlVisibility = () => {
     if (!fabricRef.current) return;
-    
-    const activeObject = fabricRef.current.getActiveObject();
-    // We could update UI state based on active object here if needed
+    // This is a placeholder for any UI state updates based on selection
   };
 
   useEffect(() => {
-    const canvas = initializeCanvas();
+    const cleanupFn = initializeCanvas();
     
     return () => {
-      if (canvas) {
-        canvas.dispose();
+      if (cleanupFn) {
+        cleanupFn();
       }
     };
   }, []);
@@ -329,10 +337,23 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     // Give the browser a moment to update the DOM
     setTimeout(() => {
       if (fabricRef.current) {
-        fabricRef.current.setDimensions({
-          width: canvasRef.current?.width || 300,
-          height: canvasRef.current?.height || 300
-        });
+        if (isFullscreen) {
+          // Returning to normal size
+          fabricRef.current.setDimensions({
+            width: 300,
+            height: 300
+          });
+        } else {
+          // Going fullscreen - size based on container
+          const containerWidth = containerRef.current?.clientWidth || window.innerWidth;
+          const containerHeight = containerRef.current?.clientHeight || window.innerHeight;
+          const maxDimension = Math.min(containerWidth, containerHeight) * 0.8;
+          
+          fabricRef.current.setDimensions({
+            width: maxDimension,
+            height: maxDimension
+          });
+        }
         fabricRef.current.renderAll();
       }
     }, 100);
@@ -350,42 +371,37 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     toast.success("Element deleted");
   };
 
-  // Rotate selected object
-  const rotateSelectedObject = () => {
+  // Move object to front (bring forward)
+  const bringToFront = () => {
     if (!fabricRef.current) return;
     
     const activeObject = fabricRef.current.getActiveObject();
     if (!activeObject) return;
     
-    activeObject.rotate((activeObject.angle || 0) + 45);
+    fabricRef.current.bringToFront(activeObject);
     fabricRef.current.renderAll();
+    toast.success("Moved to front");
   };
 
-  // Move object slightly in a direction
-  const moveObject = (direction: 'left' | 'right' | 'up' | 'down') => {
+  // Send object to back
+  const sendToBack = () => {
     if (!fabricRef.current) return;
     
     const activeObject = fabricRef.current.getActiveObject();
     if (!activeObject) return;
     
-    const moveAmount = 10;
+    // Make sure we don't send it behind the shirt
+    fabricRef.current.sendToBack(activeObject);
     
-    switch (direction) {
-      case 'left':
-        activeObject.left = (activeObject.left || 0) - moveAmount;
-        break;
-      case 'right':
-        activeObject.left = (activeObject.left || 0) + moveAmount;
-        break;
-      case 'up':
-        activeObject.top = (activeObject.top || 0) - moveAmount;
-        break;
-      case 'down':
-        activeObject.top = (activeObject.top || 0) + moveAmount;
-        break;
+    // Move the shirt to the very back
+    const objects = fabricRef.current.getObjects();
+    if (objects.length > 0) {
+      const shirtObject = objects[0];
+      fabricRef.current.sendToBack(shirtObject);
     }
     
     fabricRef.current.renderAll();
+    toast.success("Moved to back");
   };
 
   // Handle form changes
@@ -447,9 +463,18 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
               variant="outline" 
               size="icon"
               className="rounded-full"
-              onClick={rotateSelectedObject}
+              onClick={bringToFront}
             >
-              <RotateCw className="h-4 w-4" />
+              <MoveUp className="h-4 w-4" />
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="icon"
+              className="rounded-full"
+              onClick={sendToBack}
+            >
+              <MoveDown className="h-4 w-4" />
             </Button>
             
             <Button 
@@ -460,41 +485,6 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
             >
               <Trash2 className="h-4 w-4" />
             </Button>
-            
-            <div className="flex gap-1">
-              <Button 
-                variant="outline" 
-                size="icon"
-                className="rounded-full"
-                onClick={() => moveObject('left')}
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <Button 
-                variant="outline" 
-                size="icon"
-                className="rounded-full"
-                onClick={() => moveObject('right')}
-              >
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-              <Button 
-                variant="outline" 
-                size="icon"
-                className="rounded-full"
-                onClick={() => moveObject('up')}
-              >
-                <ArrowUp className="h-4 w-4" />
-              </Button>
-              <Button 
-                variant="outline" 
-                size="icon"
-                className="rounded-full"
-                onClick={() => moveObject('down')}
-              >
-                <ArrowDown className="h-4 w-4" />
-              </Button>
-            </div>
             
             <label className="rounded-full w-9 h-9 flex items-center justify-center border-2 border-input hover:border-primary transition-colors cursor-pointer">
               <input
@@ -508,9 +498,9 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
           </div>
         </div>
         
-        <div className={`relative mx-auto ${isFullscreen ? "max-w-xl" : "max-w-[300px] w-full"}`}>
+        <div className={`relative mx-auto ${isFullscreen ? "max-w-full" : "max-w-[300px] w-full"}`}>
           <div className="rounded-lg border bg-white dark:bg-gray-800 p-3 shadow-sm flex items-center justify-center">
-            <canvas ref={canvasRef} className="block" />
+            <canvas ref={canvasRef} className="block max-w-full" />
           </div>
         </div>
         
@@ -580,6 +570,7 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground mt-1">More wilayas coming soon</p>
             </div>
 
             <div className="space-y-2">
