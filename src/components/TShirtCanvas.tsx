@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 import type { TShirtDesign } from "@/pages/Customizer";
@@ -203,6 +204,21 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     });
   }, [design.color]);
 
+  // Effect to load designs from props
+  useEffect(() => {
+    if (!design.designUrl || !fabricRef.current) return;
+    
+    // Only add if this is a new design URL
+    if (fabricRef.current.getObjects().find(obj => {
+      return obj instanceof fabric.Image && obj.getSrc() === design.designUrl;
+    })) {
+      return; // Image already exists in canvas
+    }
+
+    // Add the image to canvas
+    addImageToCanvas(design.designUrl);
+  }, [design.designUrl]);
+
   // Add image to canvas
   const addImageToCanvas = (url: string) => {
     if (!fabricRef.current) return;
@@ -210,21 +226,23 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     fabric.Image.fromURL(url, (img) => {
       if (!fabricRef.current) return;
 
-      // Scale image to fit within boundaries while maintaining aspect ratio
-      const maxDimension = 150; // Smaller to fit on the t-shirt
-      const scale = Math.min(
-        maxDimension / img.width!,
-        maxDimension / img.height!
-      );
-
-      // Center the design on the canvas
+      // Position in center of shirt - removed size limitation
       const canvasWidth = fabricRef.current.getWidth();
       const canvasHeight = fabricRef.current.getHeight();
       
-      img.scale(scale);
+      // Scale while maintaining aspect ratio to fit reasonably on the shirt
+      const imgWidth = img.width || 0;
+      const imgHeight = img.height || 0;
+      
+      // Calculate scale to fit in 60% of canvas width
+      const targetWidth = canvasWidth * 0.6;
+      const scale = targetWidth / imgWidth;
+      
       img.set({
-        left: (canvasWidth - img.width! * scale) / 2,
-        top: (canvasHeight - img.height! * scale) / 2.5, // Position slightly higher on the shirt
+        scaleX: scale,
+        scaleY: scale,
+        left: (canvasWidth - imgWidth * scale) / 2,
+        top: (canvasHeight - imgHeight * scale) / 2.5, // Position slightly higher on the shirt
         cornerStyle: 'circle',
         transparentCorners: false,
         cornerColor: 'rgba(0,0,0,0.5)',
@@ -293,8 +311,9 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size must be less than 5MB");
+    // Increased size limit to 25MB
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error("File size must be less than 25MB");
       return;
     }
 

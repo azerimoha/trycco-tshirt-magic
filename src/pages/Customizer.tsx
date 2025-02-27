@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { TShirtCanvas } from "@/components/TShirtCanvas";
 import { toast } from "sonner";
@@ -30,8 +29,9 @@ const Customizer = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size must be less than 5MB");
+    // Increased file size limit to 25MB (25 * 1024 * 1024 bytes)
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error("File size must be less than 25MB");
       return;
     }
 
