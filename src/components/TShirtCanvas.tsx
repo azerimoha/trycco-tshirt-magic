@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 import type { TShirtDesign } from "@/pages/Customizer";
@@ -60,9 +61,13 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    // Set fixed dimensions for the canvas
+    const canvasWidth = 300;
+    const canvasHeight = 300;
+
     const canvas = new fabric.Canvas(canvasRef.current, {
-      width: 300,
-      height: 300,
+      width: canvasWidth,
+      height: canvasHeight,
       backgroundColor: "#f8f9fa",
     });
 
@@ -71,11 +76,28 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     // Load t-shirt background based on selected color
     const shirtImage = SHIRT_IMAGES[design.color];
     fabric.Image.fromURL(shirtImage, (img) => {
-      img.scaleToWidth(300);
+      // Calculate proper positioning to center the shirt
+      const imgWidth = img.width || 0;
+      const imgHeight = img.height || 0;
+      
+      // Maintain aspect ratio while fitting within canvas
+      const scale = Math.min(canvasWidth / imgWidth, canvasHeight / imgHeight) * 0.85;
+      
+      // Center the image
+      const left = (canvasWidth - imgWidth * scale) / 2;
+      const top = (canvasHeight - imgHeight * scale) / 2;
+      
       img.set({
+        scaleX: scale,
+        scaleY: scale,
+        left: left,
+        top: top,
         selectable: false,
         evented: false,
+        originX: 'left',
+        originY: 'top'
       });
+      
       canvas.add(img);
       canvas.renderAll();
     });
@@ -98,18 +120,20 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
       if (!fabricRef.current) return;
 
       // Scale image to fit within boundaries while maintaining aspect ratio
-      const maxDimension = 200;
+      const maxDimension = 150; // Smaller to fit on the t-shirt
       const scale = Math.min(
         maxDimension / img.width!,
         maxDimension / img.height!
       );
 
+      // Center the design on the canvas
+      const canvasWidth = fabricRef.current.getWidth();
+      const canvasHeight = fabricRef.current.getHeight();
+      
       img.scale(scale);
-
-      // Center the design on the t-shirt
       img.set({
-        left: (fabricRef.current.getWidth() - img.width! * scale) / 2,
-        top: (fabricRef.current.getHeight() - img.height! * scale) / 2,
+        left: (canvasWidth - img.width! * scale) / 2,
+        top: (canvasHeight - img.height! * scale) / 2.5, // Position slightly higher on the shirt
         cornerStyle: 'circle',
         transparentCorners: false,
         cornerColor: 'rgba(0,0,0,0.5)',
@@ -151,8 +175,8 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     <>
       <div className="flex flex-col items-center justify-center gap-4">
         <div className="relative w-full max-w-[300px] mx-auto">
-          <div className="rounded-lg border bg-white p-3 shadow-sm">
-            <canvas ref={canvasRef} className="w-full" />
+          <div className="rounded-lg border bg-white dark:bg-gray-800 p-3 shadow-sm flex items-center justify-center">
+            <canvas ref={canvasRef} className="block" />
           </div>
         </div>
         <Button onClick={handleCheckout} className="w-full max-w-[300px]">
