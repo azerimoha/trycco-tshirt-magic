@@ -139,3 +139,19 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
+
+/* Glassmorphism transition effect */
+@keyframes glassMorph {
+  0% {
+    backdrop-filter: blur(0);
+    background-opacity: 1;
+  }
+  100% {
+    backdrop-filter: blur(12px);
+    background-opacity: 0;
+  }
+}
+
+.animate-glass-morph {
+  animation: glassMorph 0.5s ease-out forwards;
+}
