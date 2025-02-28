@@ -41,11 +41,11 @@ const Customizer = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 md:py-8 min-h-[calc(100vh-6rem)]">
-      <div className="animate-fade-in max-w-md mx-auto">
+    <div className="container flex flex-col justify-center items-center h-[calc(100vh-6rem)] mx-auto px-4 py-6 overflow-hidden">
+      <div className="animate-fade-in max-w-md mx-auto flex flex-col items-center">
         <h1 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">Customize Your T-Shirt</h1>
         
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 w-full">
           <div className="flex justify-center gap-3">
             <div className="relative">
               <Select
@@ -109,7 +109,7 @@ const Customizer = () => {
             </div>
           </div>
 
-          <div className="mt-8">
+          <div className="flex justify-center mt-8 mb-4">
             <TShirtCanvas design={design} />
           </div>
         </div>
