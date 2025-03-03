@@ -29,8 +29,16 @@ export function LoadingScreen({ onLoadingComplete, duration = 2000 }: LoadingScr
   }, [duration, onLoadingComplete]);
   
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background">
-      <div className="flex h-full w-full items-center justify-center">
+    <div 
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background"
+      style={{
+        backgroundImage: "url('/lovable-uploads/436f23f4-8e5a-48c8-a155-4dc85af6644a.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat"
+      }}
+    >
+      <div className="flex h-full w-full items-center justify-center bg-black/40">
         <img 
           src="/lovable-uploads/b542941f-e1de-4789-ae6d-0648738ca37d.png"
           alt="TRYCO" 
