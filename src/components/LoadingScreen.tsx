@@ -15,7 +15,7 @@ export function LoadingScreen({ onLoadingComplete, duration = 2000 }: LoadingScr
   // Preload the background image
   useEffect(() => {
     const bgImage = new Image();
-    bgImage.src = "/lovable-uploads/1f97f35f-a934-4947-9486-e5d892efe600.png";
+    bgImage.src = "/lovable-uploads/d431afb3-c096-4f85-8d03-1ba1e75c3bc4.png";
     bgImage.onload = () => setBgLoaded(true);
   }, []);
   
@@ -51,7 +51,7 @@ export function LoadingScreen({ onLoadingComplete, duration = 2000 }: LoadingScr
       {bgLoaded && (
         <div className="absolute inset-0 z-0">
           <img 
-            src="/lovable-uploads/1f97f35f-a934-4947-9486-e5d892efe600.png"
+            src="/lovable-uploads/d431afb3-c096-4f85-8d03-1ba1e75c3bc4.png"
             alt="Background" 
             className="h-full w-full object-cover"
           />
