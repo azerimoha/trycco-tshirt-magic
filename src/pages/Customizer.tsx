@@ -43,7 +43,7 @@ const Customizer = () => {
   return (
     <div className="container mx-auto px-4 py-6 md:py-8 min-h-[calc(100vh-6rem)]">
       <div className="animate-fade-in max-w-md mx-auto">
-        <h1 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">Customize Your T-Shirt</h1>
+        <h1 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl text-center">Customize Your T-Shirt</h1>
         
         <div className="flex flex-col gap-6">
           <div className="flex justify-center gap-3">
