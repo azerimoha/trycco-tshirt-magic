@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 import type { TShirtDesign } from "@/pages/Customizer";
@@ -48,12 +49,6 @@ const DELIVERY_FEES = {
   home: 600,
 };
 
-const PRINT_AREA = {
-  topOffset: 246,
-  bottomOffset: 148,
-  sideOffset: 277
-};
-
 export function TShirtCanvas({ design }: TShirtCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
@@ -68,13 +63,14 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const printAreaRef = useRef<fabric.Rect | null>(null);
   
+  // Fixed canvas dimensions for consistency
   const normalSize = 300;
   const [canvasSize, setCanvasSize] = useState(normalSize);
 
   const total = basePrice + DELIVERY_FEES[deliveryType];
 
+  // Initialize the fabric canvas
   const initializeCanvas = () => {
     if (!canvasRef.current) return;
 
@@ -87,96 +83,29 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
 
     fabricRef.current = canvas;
 
+    // Load t-shirt background based on selected color
     loadTShirtImage(design.color, canvas);
 
+    // Set up object selection events
     canvas.on('selection:created', updateControlVisibility);
     canvas.on('selection:updated', updateControlVisibility);
     canvas.on('selection:cleared', updateControlVisibility);
-    
-    addPrintAreaIndicator(canvas);
-
-    canvas.on('object:moving', enforceDesignBoundaries);
-    canvas.on('object:scaling', enforceDesignBoundaries);
-    canvas.on('object:rotating', enforceDesignBoundaries);
 
     return canvas;
   };
 
-  const addPrintAreaIndicator = (canvas: fabric.Canvas) => {
-    const canvasWidth = canvas.getWidth();
-    const canvasHeight = canvas.getHeight();
-    
-    const scaleFactor = canvasWidth / 800;
-    
-    const printAreaWidth = canvasWidth - (PRINT_AREA.sideOffset * 2 * scaleFactor);
-    const printAreaHeight = canvasHeight - (PRINT_AREA.topOffset + PRINT_AREA.bottomOffset) * scaleFactor;
-    
-    const printArea = new fabric.Rect({
-      left: PRINT_AREA.sideOffset * scaleFactor,
-      top: PRINT_AREA.topOffset * scaleFactor,
-      width: printAreaWidth,
-      height: printAreaHeight,
-      fill: 'rgba(0,0,0,0)',
-      stroke: 'rgba(0,0,0,0)',
-      strokeWidth: 1,
-      selectable: false,
-      evented: false,
-      excludeFromExport: true
-    });
-    
-    canvas.add(printArea);
-    canvas.sendToBack(printArea);
-    printAreaRef.current = printArea;
-    
-    return printArea;
-  };
-
-  const enforceDesignBoundaries = (options: any) => {
-    if (!printAreaRef.current || !fabricRef.current) return;
-    
-    const obj = options.target;
-    if (!obj || obj === printAreaRef.current) return;
-    
-    const printArea = printAreaRef.current;
-    const objBounds = obj.getBoundingRect();
-    
-    const printBounds = printArea.getBoundingRect();
-    
-    let modified = false;
-    
-    if (objBounds.left < printBounds.left) {
-      obj.set({ left: obj.left + (printBounds.left - objBounds.left) });
-      modified = true;
-    } else if (objBounds.left + objBounds.width > printBounds.left + printBounds.width) {
-      obj.set({ left: obj.left - ((objBounds.left + objBounds.width) - (printBounds.left + printBounds.width)) });
-      modified = true;
-    }
-    
-    if (objBounds.top < printBounds.top) {
-      obj.set({ top: obj.top + (printBounds.top - objBounds.top) });
-      modified = true;
-    } else if (objBounds.top + objBounds.height > printBounds.top + printBounds.height) {
-      obj.set({ top: obj.top - ((objBounds.top + objBounds.height) - (printBounds.top + printBounds.height)) });
-      modified = true;
-    }
-    
-    if (modified) {
-      fabricRef.current.requestRenderAll();
-    }
-  };
-
+  // Helper function to load t-shirt image
   const loadTShirtImage = (color: string, canvas: fabric.Canvas) => {
     const shirtImage = SHIRT_IMAGES[color as keyof typeof SHIRT_IMAGES];
     
     fabric.Image.fromURL(shirtImage, (img) => {
-      if (!fabricRef.current) return;
-      
       const imgWidth = img.width || 0;
       const imgHeight = img.height || 0;
       
+      // Scale to fit while maintaining aspect ratio
       const scaleX = canvas.getWidth() / imgWidth;
       const scaleY = canvas.getHeight() / imgHeight;
-      const scale = Math.min(scaleX, scaleY) * 0.9;
+      const scale = Math.min(scaleX, scaleY) * 0.9; // Scale to 90% of the fitting size
       
       img.set({
         scaleX: scale,
@@ -189,36 +118,15 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
         originY: 'top'
       });
       
-      if (fabricRef.current.getObjects().length > 0 && fabricRef.current.getObjects()[0] instanceof fabric.Image) {
-        fabricRef.current.remove(fabricRef.current.getObjects()[0]);
+      // Remove any existing shirt image (first object)
+      const objects = canvas.getObjects();
+      if (objects.length > 0 && objects[0] instanceof fabric.Image) {
+        canvas.remove(objects[0]);
       }
       
       canvas.add(img);
       canvas.sendToBack(img);
-      
-      updatePrintAreaAfterResize();
-      
       canvas.renderAll();
-    });
-  };
-
-  const updatePrintAreaAfterResize = () => {
-    if (!fabricRef.current || !printAreaRef.current) return;
-    
-    const canvas = fabricRef.current;
-    const canvasWidth = canvas.getWidth();
-    const canvasHeight = canvas.getHeight();
-    
-    const scaleFactor = canvasWidth / 800;
-    
-    const printAreaWidth = canvasWidth - (PRINT_AREA.sideOffset * 2 * scaleFactor);
-    const printAreaHeight = canvasHeight - (PRINT_AREA.topOffset + PRINT_AREA.bottomOffset) * scaleFactor;
-    
-    printAreaRef.current.set({
-      left: PRINT_AREA.sideOffset * scaleFactor,
-      top: PRINT_AREA.topOffset * scaleFactor,
-      width: printAreaWidth,
-      height: printAreaHeight
     });
   };
 
@@ -226,9 +134,11 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     if (!fabricRef.current) return;
   };
 
+  // Initialize canvas on component mount
   useEffect(() => {
     const canvas = initializeCanvas();
     
+    // Handle window resize
     const handleResize = () => {
       if (fabricRef.current && isFullscreen) {
         recalculateCanvasSize();
@@ -245,25 +155,29 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     };
   }, []);
 
+  // Calculate appropriate canvas size based on screen dimensions and fullscreen state
   const recalculateCanvasSize = () => {
     if (!containerRef.current) return;
     
     let newSize;
     
     if (isFullscreen) {
+      // Calculate a reasonable size for fullscreen mode (80% of min viewport dimension)
       const minDimension = Math.min(window.innerWidth, window.innerHeight);
-      newSize = Math.min(minDimension * 0.8, 800);
+      newSize = Math.min(minDimension * 0.8, 800); // Cap at 800px
     } else {
       newSize = normalSize;
     }
     
     setCanvasSize(newSize);
     
+    // Apply new size to canvas if it exists
     if (fabricRef.current) {
       resizeCanvas(newSize);
     }
   };
 
+  // Resize canvas while preserving positions and scales of objects
   const resizeCanvas = (newSize: number) => {
     if (!fabricRef.current) return;
     
@@ -271,11 +185,12 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     const oldSize = canvas.getWidth();
     const scaleFactor = newSize / oldSize;
     
+    // Store all objects except the shirt image
     const objects = canvas.getObjects();
     const shirtImage = objects[0];
-    const printArea = printAreaRef.current;
-    const designs = objects.filter(obj => obj !== shirtImage && obj !== printArea);
+    const designs = objects.slice(1);
     
+    // Store design object properties before resizing
     const designData = designs.map(obj => ({
       obj,
       left: obj.left,
@@ -285,15 +200,18 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
       angle: obj.angle
     }));
     
+    // Resize the canvas
     canvas.setDimensions({
       width: newSize,
       height: newSize
     });
     
+    // Reload the shirt image to fit the new canvas size
     if (shirtImage) {
       loadTShirtImage(design.color, canvas);
     }
     
+    // Scale all other objects proportionally
     designData.forEach(data => {
       if (data.obj && data.left !== undefined && data.top !== undefined) {
         data.obj.set({
@@ -305,22 +223,23 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
       }
     });
     
-    updatePrintAreaAfterResize();
-    
     canvas.renderAll();
   };
 
+  // Effect for handling fullscreen toggle
   useEffect(() => {
     recalculateCanvasSize();
   }, [isFullscreen]);
 
+  // Effect for updating shirt color
   useEffect(() => {
     if (!fabricRef.current) return;
     
+    // Save all design elements, but not the shirt
     const objects = fabricRef.current.getObjects();
-    const printArea = printAreaRef.current;
-    const designElements = objects.filter(obj => obj !== objects[0] && obj !== printArea);
+    const designElements = objects.slice(1);
     
+    // Keep track of designs' positions and scales
     const designData = designElements.map(obj => ({
       object: obj,
       left: obj.left,
@@ -330,11 +249,14 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
       angle: obj.angle
     }));
     
+    // Load new shirt
     loadTShirtImage(design.color, fabricRef.current);
     
+    // Add design elements back (after a small delay to ensure shirt is loaded)
     setTimeout(() => {
       if (!fabricRef.current) return;
       
+      // Make sure the designs are still at their correct positions
       designData.forEach(data => {
         fabricRef.current?.add(data.object);
       });
@@ -343,38 +265,43 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     }, 50);
   }, [design.color]);
 
+  // Effect to load designs from props
   useEffect(() => {
     if (!design.designUrl || !fabricRef.current) return;
     
+    // Check if this design has already been added
     if (fabricRef.current.getObjects().find(obj => {
       return obj instanceof fabric.Image && obj.getSrc() === design.designUrl;
     })) {
-      return;
+      return; // Image already exists
     }
 
     addImageToCanvas(design.designUrl);
   }, [design.designUrl]);
 
+  // Add image to canvas
   const addImageToCanvas = (url: string) => {
-    if (!fabricRef.current || !printAreaRef.current) return;
+    if (!fabricRef.current) return;
 
     fabric.Image.fromURL(url, (img) => {
-      if (!fabricRef.current || !printAreaRef.current) return;
+      if (!fabricRef.current) return;
 
-      const printArea = printAreaRef.current;
-      const printBounds = printArea.getBoundingRect();
+      const canvasWidth = fabricRef.current.getWidth();
+      const canvasHeight = fabricRef.current.getHeight();
       
+      // Scale image to fit on shirt
       const imgWidth = img.width || 0;
       const imgHeight = img.height || 0;
       
-      const targetWidth = printBounds.width * 0.7;
+      // Scale to 50% of canvas width
+      const targetWidth = canvasWidth * 0.5;
       const scale = targetWidth / imgWidth;
       
       img.set({
         scaleX: scale,
         scaleY: scale,
-        left: printBounds.left + (printBounds.width - imgWidth * scale) / 2,
-        top: printBounds.top + (printBounds.height - imgHeight * scale) / 2,
+        left: (canvasWidth - imgWidth * scale) / 2,
+        top: (canvasHeight - imgHeight * scale) / 2.5,
         cornerStyle: 'circle',
         transparentCorners: false,
         cornerColor: 'rgba(0,0,0,0.5)',
@@ -391,10 +318,12 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     });
   };
 
+  // Toggle fullscreen mode
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
 
+  // Delete selected object
   const deleteSelectedObject = () => {
     if (!fabricRef.current) return;
     
@@ -408,6 +337,7 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     });
   };
 
+  // Move object forward one layer
   const moveForward = () => {
     if (!fabricRef.current) return;
     
@@ -421,6 +351,7 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     });
   };
 
+  // Move object backward one layer
   const moveBackward = () => {
     if (!fabricRef.current) return;
     
@@ -429,6 +360,7 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     
     const shirtObject = fabricRef.current.getObjects()[0];
     
+    // Don't allow moving behind the shirt
     const activeIndex = fabricRef.current.getObjects().indexOf(activeObject);
     const shirtIndex = fabricRef.current.getObjects().indexOf(shirtObject);
     
@@ -445,6 +377,7 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     }
   };
 
+  // Handle file upload
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -463,10 +396,12 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     });
   };
 
+  // Handle form changes
   const handleFormChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Handle checkout
   const handleCheckout = () => {
     if (fabricRef.current && fabricRef.current.getObjects().length <= 1) {
       toast.error("Please upload at least one design", {
@@ -477,6 +412,7 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
     setShowCheckout(true);
   };
 
+  // Handle order confirmation
   const handleConfirmOrder = () => {
     if (!formData.fullName || !formData.phoneNumber || !formData.wilaya) {
       toast.error("Please fill in all fields", {
