@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
 
@@ -7,7 +6,7 @@ interface LoadingScreenProps {
   duration?: number;
 }
 
-export function LoadingScreen({ onLoadingComplete, duration = 2000 }: LoadingScreenProps) {
+export function LoadingScreen({ onLoadingComplete, duration = 5000 }: LoadingScreenProps) {
   const [progress, setProgress] = useState(0);
   const [bgLoaded, setBgLoaded] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(false);
