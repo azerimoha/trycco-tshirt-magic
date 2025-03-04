@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 import type { TShirtDesign } from "@/pages/Customizer";
@@ -494,7 +495,7 @@ export function TShirtCanvas({ design }: TShirtCanvasProps) {
             aspectRatio: "1/1"
           }}
         >
-          <div className="rounded-lg border bg-white dark:bg-gray-800 p-3 shadow-sm flex items-center justify-center h-full w-full">
+          <div className="flex items-center justify-center h-full w-full">
             <canvas ref={canvasRef} />
           </div>
         </div>
