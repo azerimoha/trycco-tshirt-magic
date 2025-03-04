@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Layout } from "./components/Layout";
+import Layout from "./components/Layout"; // Fixed import syntax
 import { ThemeProvider } from "./components/ThemeProvider";
 import { LoadingScreen } from "./components/LoadingScreen";
 import Index from "./pages/Index";
