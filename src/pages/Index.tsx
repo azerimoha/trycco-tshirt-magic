@@ -7,7 +7,7 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center text-center">
+    <div className="flex h-[calc(100vh-16rem)] md:h-[calc(100vh-5rem)] flex-col items-center justify-center text-center overflow-hidden">
       <div className="animate-fade-in space-y-8">
         <div className="mx-auto flex items-center justify-center">
           <img
