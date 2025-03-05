@@ -139,3 +139,13 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
+
+:root {
+  --bottom-nav-height: 4rem;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --bottom-nav-height: 0;
+  }
+}
