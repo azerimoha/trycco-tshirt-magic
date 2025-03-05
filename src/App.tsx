@@ -1,11 +1,9 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Layout } from "./components/Layout";
+import Layout from "./components/Layout";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { LoadingScreen } from "./components/LoadingScreen";
 import Index from "./pages/Index";
@@ -44,8 +42,6 @@ const App = () => {
               </Layout>
             </BrowserRouter>
           )}
-          <Toaster />
-          <Sonner />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
