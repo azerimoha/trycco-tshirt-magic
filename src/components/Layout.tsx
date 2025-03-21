@@ -1,22 +1,17 @@
 
 import { BottomNav } from "./BottomNav";
 import { Link } from "react-router-dom";
-import { Sun, Moon, User } from "lucide-react";
-import { useTheme } from "./ThemeProvider";
+import { User } from "lucide-react";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-gradient-to-b from-background to-muted/20">
@@ -31,14 +26,7 @@ export function Layout({ children }: LayoutProps) {
           </Link>
           
           <div className="flex items-center space-x-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={toggleTheme}
-              className="rounded-full"
-            >
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
+            <ThemeToggle />
             
             <Button 
               variant="ghost" 
