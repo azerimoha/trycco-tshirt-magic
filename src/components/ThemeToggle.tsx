@@ -2,7 +2,7 @@
 import React from "react";
 import { useTheme } from "./ThemeProvider";
 import { Button } from "./ui/button";
-import { Sun, Moon } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -16,24 +16,22 @@ export function ThemeToggle() {
       variant="ghost" 
       size="icon" 
       onClick={toggleTheme}
-      className="relative rounded-full overflow-hidden"
+      className="relative w-16 h-8 rounded-full p-0 overflow-hidden bg-gray-200 dark:bg-gray-800"
       aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
     >
       <div 
-        className={`absolute inset-0 flex items-center transition-transform duration-300 ease-in-out ${
-          theme === "dark" ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`
+          absolute top-1 left-1 w-6 h-6 rounded-full bg-white dark:bg-black 
+          transition-all duration-300 ease-in-out 
+          ${theme === "dark" ? "translate-x-8" : "translate-x-0"}
+        `}
       >
-        <Sun className="h-5 w-5 absolute left-3 text-yellow-400" />
-        <Moon className="h-5 w-5 absolute right-3 text-blue-400" />
+        {theme === "dark" ? (
+          <Moon className="w-4 h-4 m-1 text-blue-400" />
+        ) : (
+          <Sun className="w-4 h-4 m-1 text-yellow-500" />
+        )}
       </div>
-      <div 
-        className={`relative z-10 h-5 w-5 rounded-full transition-all duration-300 ${
-          theme === "dark" 
-            ? "bg-black translate-x-0 transform scale-100" 
-            : "bg-white translate-x-full transform scale-100"
-        }`}
-      />
     </Button>
   );
 }
