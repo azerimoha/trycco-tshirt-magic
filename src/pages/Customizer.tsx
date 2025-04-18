@@ -41,9 +41,11 @@ const Customizer = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-5rem)] overflow-hidden flex items-center justify-center">
-      <div className="container mx-auto px-4 animate-fade-in max-w-md">
-        <h1 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">Customize Your T-Shirt</h1>
+    <div className="h-[calc(100vh-5rem)] flex items-center justify-center">
+      <div className="w-full max-w-md px-4 animate-fade-in">
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl mb-6">
+          Customize Your T-Shirt
+        </h1>
         
         <div className="flex flex-col gap-6">
           <div className="flex justify-center gap-3">
@@ -109,7 +111,7 @@ const Customizer = () => {
             </div>
           </div>
 
-          <div className="mt-8">
+          <div className="flex justify-center">
             <TShirtCanvas design={design} />
           </div>
         </div>
