@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,6 @@ const Customizer = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Increased file size limit to 25MB (25 * 1024 * 1024 bytes)
     if (file.size > 25 * 1024 * 1024) {
       toast.error("File size must be less than 25MB");
       return;
@@ -41,8 +39,8 @@ const Customizer = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-5rem)] flex items-center justify-center">
-      <div className="w-full max-w-md px-4 animate-fade-in">
+    <div className="h-full flex items-center justify-center">
+      <div className="w-full max-w-md animate-fade-in">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl mb-6">
           Customize Your T-Shirt
         </h1>
