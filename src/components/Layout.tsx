@@ -14,8 +14,8 @@ export function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-background to-muted/20">
-      <header className="fixed top-0 left-0 right-0 z-[1001] border-b bg-background/80 backdrop-blur-md">
+    <div className="flex min-h-screen w-full flex-col bg-gradient-to-b from-background to-muted/20">
+      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center">
             <img
@@ -40,7 +40,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </header>
       
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-16 pb-20">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-24 pt-4 sm:px-6 lg:px-8">
         {children}
       </main>
       

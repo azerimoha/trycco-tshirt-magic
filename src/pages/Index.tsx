@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
@@ -6,8 +7,8 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="h-full flex items-center justify-center">
-      <div className="animate-fade-in space-y-8 max-w-2xl mx-auto">
+    <div className="h-[calc(100vh-5rem)] flex items-center justify-center">
+      <div className="animate-fade-in space-y-8 max-w-2xl mx-auto px-4">
         <div className="flex items-center justify-center">
           <img
             src="/lovable-uploads/b542941f-e1de-4789-ae6d-0648738ca37d.png"
